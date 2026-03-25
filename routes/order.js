@@ -15,16 +15,19 @@ const razorpay = new Razorpay({
 router.post('/', auth, async (req, res) => {
     try {
         const { items, totalAmount } = req.body;
+        console.log('Order Request Received:', { itemsCount: items?.length, totalAmount });
+        
         if (!items || items.length === 0) return res.status(400).json({ message: 'No items' });
 
         // Instantiate Razorpay order
         const options = {
-            amount: totalAmount * 100, // Razorpay works in paise
+            amount: Math.round(totalAmount * 100), // Ensure integer paise
             currency: "INR",
             receipt: `receipt_${Date.now()}`
         };
 
         const rzpOrder = await razorpay.orders.create(options);
+        console.log('Razorpay Order Created:', rzpOrder.id);
 
         const newOrder = new Order({
             user: req.user.id,
@@ -42,7 +45,7 @@ router.post('/', auth, async (req, res) => {
             razorpayOrder: rzpOrder
         });
     } catch (error) {
-        console.error('Razorpay Order Error:', error);
+        console.error('Razorpay Order Error Details:', error);
         res.status(500).json({ message: 'Server error during order creation', error: error.message });
     }
 });

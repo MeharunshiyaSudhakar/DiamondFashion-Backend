@@ -59,7 +59,10 @@ router.post('/wishlist/:productId', auth, async (req, res) => {
         const user = await User.findById(req.user.id);
         const productId = req.params.productId;
 
-        const index = user.wishlist.indexOf(productId);
+        // More robust comparison for ObjectId vs String
+        const wishlistStrings = user.wishlist.map(id => id.toString());
+        const index = wishlistStrings.indexOf(productId);
+        
         if (index === -1) {
             user.wishlist.push(productId);
         } else {
@@ -67,9 +70,13 @@ router.post('/wishlist/:productId', auth, async (req, res) => {
         }
 
         await user.save();
-        res.json({ message: 'Wishlist updated', wishlist: user.wishlist });
+        
+        // Explicitly return as strings for frontend compatibility
+        const updatedWishlist = user.wishlist.map(id => id.toString());
+        res.json({ message: 'Wishlist updated', wishlist: updatedWishlist });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Wishlist Error Details:', error);
+        res.status(500).json({ message: 'Server error during wishlist sync' });
     }
 });
 

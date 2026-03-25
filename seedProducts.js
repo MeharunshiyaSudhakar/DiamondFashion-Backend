@@ -43,8 +43,8 @@ async function seedProducts() {
         console.log('Connected to MongoDB for product seeding');
 
         // Remove all existing products (including furniture)
-        await Product.deleteMany({});
-        console.log('Removed existing products');
+        const deleted = await Product.deleteMany({});
+        console.log(`Removed ${deleted.deletedCount} existing products`);
 
         // Insert new t-shirts
         await Product.insertMany(products);
